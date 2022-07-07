@@ -1,0 +1,12 @@
+*.pyc
+*.img
+tmp/
+workspace/
+out/
+boot_out/
+vendor_boot_out/
+super/
+images/
+dtbo/
+dtbs/
+oppo_ozip/
