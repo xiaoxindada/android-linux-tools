@@ -12,7 +12,7 @@ usage() {
 }
 
 partition="$1"
-if [ $# != 1 ];then
+if [ $# != 1 ]; then
   usage
 fi
 
@@ -29,6 +29,14 @@ mkdir -p $OUTDIR
 rm -rf $OUTDIR/$partition
 
 [ ! -f ${partition}.img ] && echo "${partition}.img not found!" && exit 1
+
+if file ${partition}.img | grep -qo "sparse"; then
+  echo "Detect sparse image, convert to raw image ..."
+  $bin/simg2img ${partition}.img ${partition}r.img
+  [ $? != 0 ] && echo "Convert raw image failed!" && exit 1
+  mv -f ${partition}r.img ${partition}.img
+fi
+
 if [ $(xxd -p -l "2" --skip "$EXT_OFFSET" "${partition}.img") = "$EXT_MAGIC" ]; then
   echo "detected ${partition}.img is ext2/3/4 filesystem"
   echo "extract ${partition}.img..."
