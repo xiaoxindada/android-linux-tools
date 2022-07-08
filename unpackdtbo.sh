@@ -10,15 +10,15 @@ if [ ! -e $LOCALDIR/dtbo.img ];then
   echo "dtbo.img not found!"
   exit 1
 fi
-dtc="dtb_tools/dtc"
-mkdtimg_tool="dtb_tools/mkdtboimg.py"
-dtbodir="$LOCALDIR/dtbo"
+dtc="$LOCALDIR/dtb_tools/dtc"
+mkdtimg_tool="$LOCALDIR/dtb_tools/mkdtboimg.py"
+dtbodir="$OUTDIR/dtbo"
 
 rm -rf $dtbodir
 mkdir -p $dtbodir/dtbo_files
 mkdir -p $dtbodir/dts_files
 
-echo "正在解压dtbo.img"
+echo "extract dtbo.img ..."
 $mkdtimg_tool dump "$LOCALDIR/dtbo.img" -b "$dtbodir/dtbo_files/dtbo" > $dtbodir/dtbo_imageinfo.txt
 
 dtbo_files_name=$(ls $dtbodir/dtbo_files)

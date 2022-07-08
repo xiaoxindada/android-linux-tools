@@ -12,7 +12,7 @@ if [ ! -e $LOCALDIR/dtb ];then
 fi
 
 dtc="dtb_tools/dtc"
-dtbdir="$LOCALDIR/dtbs"
+dtbdir="$OUTDIR/dtbs"
 
 rm -rf $dtbodir
 mkdir -p $dtbdir/dts_files
