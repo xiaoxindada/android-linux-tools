@@ -9,6 +9,7 @@ Collection of scripts to help with Android ROM stuff
 ```
 
 ## How to use
+**In order to ensure that all components work properly, always to used `su`**
 
 ```
 # Most partition image extract and system.img generate: 
