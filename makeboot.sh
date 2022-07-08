@@ -5,7 +5,7 @@ cd $LOCALDIR
 source ./bin.sh
 
 bb="$bin/busybox"
-toolsdir="boot_tools"
+toolsdir="$LOCALDIR/boot_tools"
 cpio="$toolsdir/cpio"
 lz4="$toolsdir/lz4"
 aik="$toolsdir/AIK"
@@ -58,19 +58,19 @@ repack_ramdisk() {
 
   cd $final_outdir/$ramdisk_dir
   local repack_ramdisk_cmd="find . | $cpio -R 0:0 -H newc -o 2>/dev/null | $repackcmd > ../ramdisk-new.cpio$compext"
-  
+
   echo "rebacking ramdisk-new.cpio$compext ..."
   eval $repack_ramdisk_cmd
   [ $? != 0 ] && abort "repack ramdisk failed!"
-  if [[ -f "../ramdisk-new.cpio$compext" && $(cat $final_outdir/extract_prog) == "magiskboot" ]];then
+  if [[ -f "../ramdisk-new.cpio$compext" && $(cat $final_outdir/extract_prog) == "magiskboot" ]]; then
     echo "use magiskboot repack"
     echo "copy ramdisk-new.cpio$compext to ramdisk.cpio ..."
     cp -af "../ramdisk-new.cpio$compext" "../ramdisk.cpio"
   fi
-  cd $LOCALDIR
 }
 
 repack_with_aik() {
+  cd $LOCALDIR
   mv -f $final_outdir/* $aik
   cd $aik
   ./repackimg.sh --forceelf #--origsize
@@ -80,7 +80,6 @@ repack_with_aik() {
   mv -f image-new.img new-boot.img
   mv -f new-boot.img $final_outdir
   ./cleanup.sh
-  cd $LOCALDIR
 
   if [ -s $final_outdir/new-boot.img ]; then
     echo "output: $final_outdir/new-boot.img"
@@ -89,8 +88,7 @@ repack_with_aik() {
 }
 
 repack_with_magisk() {
-  local ramdisk_comp=".$(cat $final_outdir/ramdisk_comp | grep -v "raw")"
-
+  cd $LOCALDIR
   cp -frp $toolsdir/magiskboot $final_outdir/
   cp -frp $image $final_outdir/
   cd $final_outdir
@@ -108,13 +106,13 @@ repack_with_magisk() {
 [ ! -f $LOCALDIR/$image ] && echo "$LOCALDIR/$image not found" && exit 1
 
 if [ ! -f $final_outdir/extract_prog ]; then
-  abort "Need to extract the $image first"
+  abort "First need to extract the $image"
 fi
 
 if [ $(cat $final_outdir/extract_prog) = "aik" ]; then
   repack_with_aik
 elif [ $(cat $final_outdir/extract_prog) = "magiskboot" ]; then
-  repack_ramdisk
+  [ -f $final_outdir/ramdisk-new.cpio.* ] && repack_ramdisk
   repack_with_magisk
 fi
 

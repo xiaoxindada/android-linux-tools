@@ -53,7 +53,7 @@ if [ ! "$local" ]; then
   cd "$aik";
 fi;
 chmod -R 755 "$bin" "$aik"/*.sh;
-chmod 644 "$bin/magic" "$bin/androidbootimg.magic" "$bin/boot_signer.jar" "$bin/avb/"* "$bin/chromeos/"*;
+chmod 755 "$bin/magic" "$bin/androidbootimg.magic" "$bin/boot_signer.jar" "$bin/avb/"* "$bin/chromeos/"*;
 
 img="$1";
 [ -f "$cur/$1" ] && img="$cur/$1";

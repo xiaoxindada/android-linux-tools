@@ -5,14 +5,13 @@ cd $LOCALDIR
 source ./bin.sh
 
 bb="$bin/busybox"
-toolsdir="boot_tools"
+toolsdir="$LOCALDIR/boot_tools"
 cpio="$toolsdir/cpio"
 lz4="$toolsdir/lz4"
 aik="$toolsdir/AIK"
 image_type="$1"
 final_outdir="$LOCALDIR/${image_type}_out"
 image="${image_type}.img"
-
 
 usage() {
   cat <<EOF
@@ -28,10 +27,8 @@ abort() {
 }
 
 extract_ramdisk() {
-  local ramdisk_file="$1"
   local ramdisk_dir="${image_type}_ramdisk"
-  local comp
-  comp=$($toolsdir/magiskboot decompress ramdisk.cpio 2>&1 | sed -n 's;.*\[\(.*\)\];\1;p')
+  local comp=$($toolsdir/magiskboot decompress ramdisk.cpio 2>&1 | sed -n 's;.*\[\(.*\)\];\1;p')
   local compext=".${comp}"
 
   echo "$comp" >ramdisk_comp
@@ -48,26 +45,35 @@ extract_ramdisk() {
   lz4) compext=".lz4" ;;
   lz4_legacy) compext=".lz4" ;;
   raw) compext="" ;;
-  *) abort "Unsupport compressed type!" ;;
+  *)
+    echo "Unsupport ramdisk compressed type!"
+    return 1
+    ;;
   esac
 
   if [ -n "$compext" ]; then
     mv -f ramdisk.cpio ramdisk.cpio$compext
     $toolsdir/magiskboot decompress ramdisk.cpio$compext ramdisk.cpio
-    [ $? != 0 ] && abort "ramdisk decompress failed!"
+    if [ $? != 0 ]; then
+      echo "ramdisk decompress failed!"
+      return 1
+    fi
     mv -f ramdisk.cpio$compext .ramdisk.cpio$compext.orig
   fi
 
   cd $ramdisk_dir
   $toolsdir/magiskboot cpio "../ramdisk.cpio" extract >/dev/null 2>&1
-  [ $? != 0 ] && abort "ramdisk extract failed!"
+  if [ $? != 0 ]; then
+    echo "ramdisk extract failed!"
+    return 1
+  fi
   [ -z "$compext" ] && mv -f ../ramdisk.cpio ../ramdisk.cpio.orig
 
-  cd $LOCALDIR
   return 0
 }
 
 extract_with_aik() {
+  cd $LOCALDIR
   rm -rf $final_outdir
   mkdir -p $final_outdir
   cp -frp $image $aik/
@@ -78,9 +84,9 @@ extract_with_aik() {
     mv -f ramdisk/ $final_outdir/
     mv -f split_img/ $final_outdir/
     echo "aik" >$final_outdir/extract_prog
-    echo "提取成功, 輸出目录: $final_outdir"
+    echo "output: $final_outdir"
   else
-    echo "方案1提取失败"
+    echo "first scheme failed!"
     rm -rf $image
     ./cleanup.sh
     return 1
@@ -90,6 +96,7 @@ extract_with_aik() {
 }
 
 extract_with_magiskboot() {
+  cd $LOCALDIR
   rm -rf $final_outdir
   mkdir -p $final_outdir
   cp -frp $toolsdir/magiskboot $final_outdir/
@@ -99,14 +106,15 @@ extract_with_magiskboot() {
   ./magiskboot unpack -h $image
   if [ $? = "0" ]; then
     rm -rf $image magiskboot
-    ramdisk_file=$(ls | grep "ramdisk.cpio")
-    [ -f $ramdisk_file ] && extract_ramdisk "$ramdisk_file"
+    if [ -f ramdisk.cpio ]; then
+      echo "extract ramdisk ..."
+      extract_ramdisk
+      [ $? != 0 ] && return 1
+    fi
     cd $final_outdir # 因为 magiskboot 提取 ramdisk 的原因, 必须二次cd一次否则会目录错误
     echo "magiskboot" >$final_outdir/extract_prog
-    echo "提取成功, 輸出目录: $final_outdir"
+    echo "output: $final_outdir"
   else
-    echo "方案2提取失败"
-    cd $LOCALDIR
     rm -rf $final_outdir
     return 1
   fi
@@ -116,9 +124,13 @@ extract_with_magiskboot() {
 }
 
 [ $# != 1 ] && usage
-[ ! -f $LOCALDIR/$image ] && abort "$LOCALDIR/$image not found"
+[ ! -f $LOCALDIR/$image ] && abort "$LOCALDIR/$image not found!"
 
 extract_with_magiskboot
-[ $? != 0 ] && extract_with_aik
-
+if [ $? != 0 ]; then
+  echo "First scheme failed!"
+  echo "Start trying the second scheme..."
+  extract_with_aik
+  [ $? != 0 ] && abort "Second scheme failed!"
+fi
 chmod 777 -R $final_outdir
