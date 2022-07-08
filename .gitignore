@@ -11,9 +11,13 @@ dtbo/
 dtbs/
 oppo_ozip/
 new_dats/
+ops_out/
+repack_ops/
+oppo_decrypt/extract/
 *.pyc
 *.bin
 *.img
 *.zip
 *.ozip
+*.ops
 

@@ -34,13 +34,13 @@ unpacksuper.sh makesuper.sh
 apex_tools/apex_extractor.sh
 
 ## local deodex: 
-bin/oat2dex/deodex.sh
+oat2dex/deodex.sh
 
 ozip extract:
 unpackozip.sh
 
-# dtbo.img exgenerate:
-makedtbo.sh unpackdtbo.sh
+# dtbo.img extract and generate:
+unpackdtbo.sh makedtbo.sh
 
 ## apksign：
 bin/tools/signapk/signapk.sh  
@@ -48,8 +48,8 @@ bin/tools/signapk/signapk.sh
 ## LG kdz extract: 
 unpack_kdz.sh
 
-## oppo/oneplus ops extract:
-unpack_ops.sh
+## oneplus ops extract and generate:
+unpack_oneplus_ops.sh repack_oneplus_ops.sh
 ```
 
 ## Clean workspace:
@@ -65,4 +65,5 @@ clean.sh
 [MToolkit](https://github.com/Nightmare-MY)  
 [AndroidDump](https://github.com/AndroidDump/dumper)  
 [erofsUnpack](https://github.com/thka2016/erofsUnpack)  
-[oppo_ozip_decrypt](https://github.com/bkerler/oppo_ozip_decrypt)
+[oppo_ozip_decrypt](https://github.com/bkerler/oppo_ozip_decrypt)  
+[oppo_decrypt](https://github.com/bkerler/oppo_decrypt)  
