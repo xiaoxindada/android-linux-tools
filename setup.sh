@@ -43,3 +43,7 @@ pip_module_install() {
         done
     fi
 }
+
+dependency_install
+python_install
+pip_module_install
