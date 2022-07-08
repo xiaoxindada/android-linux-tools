@@ -6,54 +6,60 @@ source ./bin.sh
 LOCALDIR=`cd "$( dirname ${BASH_SOURCE[0]} )" && pwd`
 cd $LOCALDIR
 
-rm -rf ./images
-echo ""
-read -p "请输入要打包的分区(别带.img): " species
+usage() {
+  echo "$0 <image partition name>"
+  exit 1
+}
+
+partition="$1"
+if [ $# != 1 ];then
+  usage
+fi
+
+if [ ! -d $OUTDIR/$partition ];then
+  echo "$partition src dir not found!"
+  echo "Need to use unpackimg.sh extract src"
+  exit 1
+fi
 
 echo "
-开始打包
 
-当前img大小为: 
-
+Pratition size:
 _________________
 
-`du -sh ./out/$species | awk '{print $1}'`
+`du -sh $OUTDIR/$partition | awk '{print $1}'`
 
-`du -sm ./out/$species | awk '{print $1}' | sed 's/$/&M/'`
+`du -sm $OUTDIR/$partition | awk '{print $1}' | sed 's/$/&M/'`
 
-`du -sb ./out/$species | awk '{print $1}' | sed 's/$/&B/'`
+`du -sb $OUTDIR/$partition | awk '{print $1}' | sed 's/$/&B/'`
 _________________
 
-使用G为单位打包时必须带单位且为整数
-使用B为单位打包时无需带单位且在自动识别的大小添加一定大小
-推荐用M为单位大小进行打包需带单位且在自动识别的大小添加至少130M大小
+When repacking, please add 130M to the base size
 "
 
-read -p "请输入要打包的数值: " size
+read -p "Input repack partition size: " size
 
-M="$(echo "$size" | sed 's/M//g')"
-G="$(echo "$size" | sed 's/G//g')"
+M="$(echo "$size" | sed 's/M//g' | sed 's/m//g')"
+G="$(echo "$size" | sed 's/G//g'| sed 's/g//g')"
 
-if [ $(echo "$size" | grep 'M') ];then
+if [ $(echo "$size" | grep -e 'M' -e 'm') ];then
   ssize=$(($M*1024*1024))
-elif [ $(echo "$size" | grep 'G') ];then
+elif [ $(echo "$size" | grep -e 'G' -e 'g') ];then
   ssize=$(($G*1024*1024*1024))
 else
-  ssize=$size
+  ssize=$(echo "$size" | sed 's/B//g' | sed 's/b//g')
 fi
 
-if [ $species = "system" ];then
-  $bin/mkuserimg_mke2fs.sh "./out/$species/" "./out/${species}.img" "ext4" "/$species" "$ssize" -j "0" -T "1230768000" -C "./out/config/${species}_fs_config" -L "$species" -I "256" -M "/$species" -m "0" "./out/config/${species}_file_contexts"
+output_image="$OUTDIR/${partition}_new.img"
+if [ $partition = "system" ];then
+  $bin/mkuserimg_mke2fs.sh "$OUTDIR/$partition/" "$output_image" "ext4" "/$partition" "$ssize" -j "0" -T "1230768000" -C "$OUTDIR/config/${partition}_fs_config" -L "$partition" -I "256" -M "/$partition" -m "0" "$OUTDIR/config/${partition}_file_contexts"
 else  
-  $bin/mkuserimg_mke2fs.sh "./out/$species/" "./out/${species}.img" "ext4" "/$species" "$ssize" -j "0" -T "1230768000" -C "./out/config/${species}_fs_config" -L "$species" -I "256" -M "/$species" -m "0" "./out/config/${species}_file_contexts"
+  $bin/mkuserimg_mke2fs.sh "$OUTDIR/$partition/" "$output_image" "ext4" "/$partition" "$ssize" -j "0" -T "1230768000" -C "$OUTDIR/config/${partition}_fs_config" -L "$partition" -I "256" -M "/$partition" -m "0" "$OUTDIR/config/${partition}_file_contexts"
 fi
 
-if [ -s ./out/$species.img ];then
-  echo "打包完成"
-  echo "输出至images文件夹"
-  mkdir -p ./images
-  mv -f ./out/$species.img ./images
-  chmod 777 -R ./images
+if [ -s $output_image ];then
+  echo "Output: $output_image"
 else
-  echo "打包失败，错误日志如上"
+  echo "Create $output_image failed!"
+  exit 1
 fi
