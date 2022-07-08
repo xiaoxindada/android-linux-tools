@@ -23,8 +23,14 @@ makeboot.sh unpackboot.sh
 ## xxx dat/br generate:
 img2sdat.sh
 
+## payload.bin extract
+unpack_payload.sh
+
+## super.img extract and generate
+unpacksuper.sh makesuper.sh
+
 ## android apex extract:
-apex.sh
+apex_tools/apex_extractor.sh
 
 ## local deodex: 
 bin/oat2dex/deodex.sh
@@ -52,7 +58,7 @@ clean.sh
 
 ## Credits:
 
-[LineageOS script](https://github.com/LineageOS/scripts)
+[LineageOS script](https://github.com/LineageOS/scripts)  
 [Erfan GSIs](https://github.com/erfanoabdi/ErfanGSIs)  
 [MToolkit](https://github.com/Nightmare-MY)  
 [AndroidDump](https://github.com/AndroidDump/dumper)  

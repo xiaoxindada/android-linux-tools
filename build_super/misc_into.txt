@@ -1,0 +1,7 @@
+use_dynamic_partitions=true
+lpmake=./lpmake
+build_super_partition=true
+super_image_in_update_package=true
+super_metadata_device=super
+super_block_devices=super
+super_partition_groups=main
