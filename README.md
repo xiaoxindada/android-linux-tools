@@ -37,7 +37,8 @@ apex_tools/apex_extractor.sh
 bin/oat2dex/deodex.sh
 
 ozip extract:
-oppo_ozip
+unpackozip.sh
+
 # dtbo.img exgenerate:
 makedtbo.sh unpackdtbo.sh
 
