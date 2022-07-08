@@ -10,7 +10,9 @@ images/
 dtbo/
 dtbs/
 oppo_ozip/
+new_dats/
 *.pyc
 *.bin
 *.img
 *.zip
+
