@@ -1,8 +1,11 @@
 #!/bin/bash
-source ./bin
-payload="$1"
-$toolsdir="payload"
-mv $payload $tools_dir
+
+source ./bin.sh
+LOCALDIR=$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd)
+cd $LOCALDIR
+
+payload_bin="$1"
+toolsdir="payload"
 
 usage() {
   echo "$0 <payload.bin path>"
@@ -10,9 +13,19 @@ usage() {
 }
 
 [ $# != 1 ] && usage
-[ ! -e $payload ] && "payload.bin not found!" && exit 1
+
+if [[ ! -e $payload_bin ]]; then
+  if [[ ! -e $toolsdir/payload.bin ]]; then
+    echo "payload.bin not found!"
+    exit 1
+  fi
+fi
+
+mkdir -p $OUTDIR
+[ ! -e $toolsdir/payload.bin ] && mv $payload_bin $toolsdir/payload.bin
 
 cd $toolsdir
-python ./payload.py $payload $OUTDIR
-[ $? != 0 ] && "extract payload.bin failed!" && exit 1
-
+python ./payload.py payload.bin $OUTDIR
+[ $? != 0 ] && echo "extract payload.bin failed!" && exit 1
+mv payload.bin $LOCALDIR
+chmod -R 777 $OUTDIR
