@@ -112,7 +112,7 @@ fi
 if [ $(cat $final_outdir/extract_prog) = "aik" ]; then
   repack_with_aik
 elif [ $(cat $final_outdir/extract_prog) = "magiskboot" ]; then
-  [ -f $final_outdir/ramdisk-new.cpio.* ] && repack_ramdisk
+  [ -f $final_outdir/ramdisk.cpio ] && repack_ramdisk
   repack_with_magisk
 fi
 
