@@ -612,8 +612,11 @@ class Extractor(object):
                 if self.sign_offset > 0:
                     img_file.seek(self.sign_offset, 0)
                 header = ext4_file_header(img_file.read(28))
+                with open(os.path.abspath(self.OUTPUT_IMAGE_FILE), 'rb') as f:
+                    _data = f.read(500000)
+                    _type = re.search(b'\x53\xEF', _data, flags=re.I)
 
-                if header.magic != EXT4_HEADER_MAGIC:
+                if _type:
                     return 'img'
                 else:
                     return 'simg'
@@ -632,8 +635,6 @@ class Extractor(object):
         else:
             self.CONFING_DIR = 'out' + os.sep + 'config'        
         if target_type == 'simg':
-            print("detected sparse header data not supported exiting....")
-            sys.exit()
             print(".....Convert %s to %s" % (os.path.basename(target), os.path.basename(target).replace(".img", ".raw.img")))
             self.__converSimgToImg(target)
             with open(os.path.abspath(self.OUTPUT_IMAGE_FILE), 'rb') as f:
